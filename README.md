@@ -1,5 +1,7 @@
-##PHP/SLIM framework reference repo
-##DB Setup
+#PHP/SLIM framework reference repo
+
+#DB Setup
+
 CREATE DATABASE task_manager;
  
 USE task_manager;

@@ -1,11 +1,16 @@
 <?php
 
 class DbHandler {
+       
     
-    
-    
-    
-    
+    /**
+     * Creates a new user
+     * @global PDO $db
+     * @param String $name
+     * @param String $email
+     * @param String $password
+     * @return array -- ?
+     */
     public function createUser($name, $email, $password) {
         require_once 'PassHash.php';
         $response = array();
@@ -44,6 +49,67 @@ class DbHandler {
 
         return $response; //Not sure why we are doing this...
         
+    }
+    
+    /**
+     * Checks user login input
+     * @global PDO $db
+     * @param String $email
+     * @param String $password
+     * @return boolean User login status success/fail
+     */
+    public function checkLogin($email, $password) {
+        global $db;
+        //Selecting only password_hash column here, may need to edit code below
+        $query = 'SELECT ' . DB_VAR_PASSWORD_HASH .
+                ' FROM ' . DB_TABLE_USERS .
+                ' WHERE ' . DB_VAR_EMAIL .' = :email';
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':email', $email);
+        $stmt->execute();
+        $userResult = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
+        
+        if (count($userResult) > 0) {
+            $pass_hash = $userResult[DB_VAR_PASSWORD_HASH];
+             
+            if (PassHash::check_password($pass_hash, $password)) {
+                return TRUE;
+            } else {
+                return FALSE;
+            }
+            
+        } else {
+            return FALSE;
+        }
+      
+    }
+    
+    /**
+     * Gets the user's info by email
+     * @param String $email
+     * @return array - returns an associative array representing the user's 
+     * data
+     */
+    public function getUserByEmail($email) {
+        $query = 'SELECT ' . DB_VAR_PASSWORD_HASH . 
+                ', ' . DB_VAR_NAME .
+                ', ' . DB_VAR_EMAIL .
+                ', ' . DB_VAR_API_KEY . 
+                ', ' . DB_VAR_STATUS .
+                ', ' . DB_VAR_CREATED_AT .                
+                ' FROM ' . DB_TABLE_USERS .
+                ' WHERE ' . DB_VAR_EMAIL .' = :email';
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':email', $email);
+        
+        if ($stmt->execute()) {
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            $stmt->closeCursor();
+            return $user;
+        } else {
+            return NULL;
+        }
     }
     
     

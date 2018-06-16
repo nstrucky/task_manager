@@ -1,7 +1,7 @@
-#PHP/SLIM framework reference repo
+# PHP/SLIM framework reference repo
 Tutorial: https://www.androidhive.info/2014/01/how-to-create-rest-api-for-android-app-using-php-slim-and-mysql-day-12-2/ 
 
-#DB Setup
+# DB Setup
 
 CREATE DATABASE task_manager;
  

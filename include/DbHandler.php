@@ -213,7 +213,96 @@ class DbHandler {
 
     /* ------------- `tasks` table method ------------------ */
     
+    /**
+     * Creates task by creating entry in tasks table
+     * @global PDO $db
+     * @param String $user_id
+     * @param String $task
+     * @return String - returns the new task id
+     */
+    public function createTask($user_id, $task) {
+        global $db;
+        $query = 'INSERT INTO ' . DB_TABLE_TASKS . '(' . DB_VAR_TASK . ')' .
+                 ' VALUES(:task)';
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':task', $task);
+        $result = $stmt->execute();
+
+        if ($result) {
+            $new_task_id = $db->lastInsertId();
+            $stmt->closeCursor();
+            
+            $res = $this->createUserTask($user_id, $new_task_id);
+            
+            if ($res) {
+                return $new_task_id;
+            } else {
+                return NULL;// should return 0?
+            }
+        } else {
+            $stmt->closeCursor();
+            return NULL;
+        }
+    }
     
+    /**
+     * Retrieves a single task where $task_id equals the id on tasks table,
+     * the task_id on user_tasks table is equal to id on tasks table, 
+     * and $user_id is equal to user_id on user_tasks table. 
+     * @global PDO $db
+     * @param String $task_id
+     * @param String $user_id
+     * @return array - returns associative array representing a task data row
+     */
+    public function getTask($task_id, $user_id) {
+//        "SELECT t.id, t.task, t.status, t.created_at from tasks t, user_tasks
+//         ut WHERE t.id = ? AND ut.task_id = t.id AND ut.user_id = ?"
+        global $db;
+        $query = 'SELECT' .
+                ' t.' . DB_VAR_ID . ',' .
+                ' t.' . DB_VAR_TASK . ',' .
+                ' t.' . DB_VAR_STATUS . ',' .
+                ' t.' . DB_VAR_CREATED_AT . 
+                ' FROM ' . DB_TABLE_TASKS . ' t,' . DB_TABLE_USERTASKS . ' ut' .
+                ' WHERE' .
+                ' t.' . DB_VAR_ID . ' = :task_id' . 
+                ' AND ' . 'ut.' . DB_VAR_TASK_ID . ' = ' . 't.' . DB_VAR_ID . 
+                ' AND ' . 'ut.' . DB_VAR_USER_ID . ' = :user_id';
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':task_id', $task_id);
+        $stmt->bindValue(':user_id', $user_id);
+        $result = $stmt->execute();
+        if ($result) {
+            $task = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $task;
+        } else {
+            return NULL;
+        }
+    }
+    
+    
+    
+    
+    /* ------------- `user_tasks` table method ------------------ */
+    /**
+     * Assigns a task to a user by creating entry in user_tasks table
+     * @global PDO $db
+     * @param String $user_id
+     * @param String $task_id
+     * @return boolean - success or failure
+     */
+    public function createUserTask($user_id, $task_id) {
+        global $db;
+        $query = 'INSERT INTO ' . DB_TABLE_USERTASKS .
+                '(' . DB_VAR_USER_ID . ', ' . DB_VAR_TASK_ID . ')' .
+                ' VALUES (:user_id, :task_id)';
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':user_id', $user_id);
+        $stmt->bindValue(':task_id', $task_id);
+        $result = $stmt->execute();
+        $stmt->closeCursor();
+        return $result;
+    }
     
     
 }

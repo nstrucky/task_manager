@@ -2,6 +2,7 @@
 
 class DbHandler {
        
+    /* ------------- `users` table method ------------------ */
     
     /**
      * Creates a new user
@@ -46,9 +47,7 @@ class DbHandler {
         } else {
             return USER_ALREADY_EXISTED;
         }
-
         return $response; //Not sure why we are doing this...
-        
     }
     
     /**
@@ -82,7 +81,6 @@ class DbHandler {
         } else {
             return FALSE;
         }
-      
     }
     
     /**
@@ -112,6 +110,77 @@ class DbHandler {
         }
     }
     
+    /**
+     * Retrieves the api_key stored for a given user (id).
+     * @global PDO $db
+     * @param String $user_id (primary key in user table)
+     * @return String
+     */
+    public function getApiKeyById($user_id) {
+        global $db;
+        $query = 'SELECT ' . DB_VAR_API_KEY . 
+                ' FROM ' . DB_TABLE_USERS . 
+                ' WHERE ' . DB_VAR_ID . ' = :id';
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':id', $user_id);
+        $stmt->execute();
+        $api_key_array = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
+        if (count($api_key_array) > 0) {
+            return $api_key_array[DB_VAR_API_KEY];
+        } else {
+            return NULL;
+        }
+    }
+    
+    /**
+     * Retrieve user's id by api key in users table
+     * @global PDO $db
+     * @param String $api_key
+     * @return int
+     */
+    public function getUserId($api_key) {
+        global $db;
+        $query = 'SELECT ' . DB_VAR_ID . 
+                ' FROM ' . DB_TABLE_USERS . 
+                ' WHERE ' . DB_VAR_API_KEY . ' = :api_key';
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':api_key', $api_key);
+        $stmt->execute();
+        $id_array = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
+        if (count($id_array) > 0) {
+            return $id_array[DB_VAR_ID];
+        } else {
+            return 0;
+        }
+    }
+    
+        /**
+     * Validates api key, checking whether the argument is associated with a 
+     * valid id in the users table.
+     * @global PDO $db
+     * @param String $api_key
+     * @return boolean - returns false if array returned by db has 0 rows 
+     * or if the ID returned is NULL or 0.
+     */
+    public function isValidApiKey($api_key) {
+        global $db;
+        $query = 'SELECT ' . DB_VAR_ID .
+                ' FROM ' . DB_TABLE_USERS . 
+                ' WHERE ' . DB_VAR_API_KEY . ' = :api_key';
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':api_key', $api_key);
+        $stmt->execute();
+        $id_array = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
+        if (count($id_array) > 0) {
+            $id = $id_array[DB_VAR_ID];
+            return $id != null && $id > 0;
+        } else {
+            return FALSE;
+        }
+    }
     
     /**
      * Determines if user exists using their email address
@@ -140,6 +209,12 @@ class DbHandler {
     private function generateApiKey() {
         return md5(uniqid(rand(), true));
     }
+    
+
+    /* ------------- `tasks` table method ------------------ */
+    
+    
+    
     
 }
 

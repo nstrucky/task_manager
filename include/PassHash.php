@@ -45,15 +45,17 @@ class PassHash {
     
    
    /**
-    * Used to compare password entered with a hash
-    * @param type $hash
-    * @param type $password
-    * @return type
+    * Used to compare password entered with a hash - I still have questions
+    * as to why this method of storing passwords works.  It must be that the 
+    * hash produced by the crypt method is just too difficult to decrypt...
+    * @param String $password_hash - originally stored hashed password
+    * @param String $password
+    * @return boolean - Hashed password equals new hashed password?
     */
-    public static function check_password($hash, $password) {
-        $full_salt = substr($hash, 0, 29);
+    public static function check_password($password_hash, $password) {
+        $full_salt = substr($password_hash, 0, 29);
         $new_hash = crypt($password, $full_salt);
-        return ($hash == $new_hash);
+        return ($password_hash == $new_hash);
     }
 }
 

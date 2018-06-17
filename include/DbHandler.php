@@ -255,7 +255,7 @@ class DbHandler {
      * @return array - returns associative array representing a task data row
      */
     public function getTask($task_id, $user_id) {
-//        "SELECT t.id, t.task, t.status, t.created_at from tasks t, user_tasks
+//        "SELECT t.id, t.task, t.status, t.created_at FROM tasks t, user_tasks
 //         ut WHERE t.id = ? AND ut.task_id = t.id AND ut.user_id = ?"
         global $db;
         $query = 'SELECT' .
@@ -280,8 +280,100 @@ class DbHandler {
         }
     }
     
+    /**
+     * Retrieves all user's tasks based on user_id input - tasks retrieved 
+     * correspond to task_id's with $user_id in user_tasks table. 
+     * @global PDO $db
+     * @param String $user_id
+     * @return array - 
+     */
+    public function getAllUserTasks($user_id) {
+//        "SELECT t.* FROM tasks t, user_tasks ut WHERE t.id = ut.task_id 
+//        AND ut.user_id = ?"
+        global $db;
+        $query = 'SELECT t.* FROM ' . DB_TABLE_TASKS . ' t,' .
+                DB_TABLE_USERTASKS . ' ut' .
+                ' WHERE ' 
+                . 't.' . DB_VAR_ID . ' =' .
+                ' ut.' . DB_VAR_TASK_ID . 
+                ' AND' .
+                ' ut.' . DB_VAR_USER_ID . ' = :user_id';
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':user_id', $user_id);
+        $stmt->execute();
+        $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->closeCursor();
+        return $tasks;
+             
+    }
     
+    /**
+     * Updates and existing task in tasks table corresponding to the $task_id
+     * which should match the task_id in user_tasks table having user_id of 
+     * $user_id method input. 
+     * @global PDO $db
+     * @param String $user_id
+     * @param String $task_id
+     * @param String $task
+     * @param String $status
+     * @return boolean - rows updated is greater than 0
+     */
+    public function updateTask($user_id, $task_id, $task, $status) {
+//        UPDATE tasks t, user_tasks ut set t.task = ?, t.status = ? 
+//        WHERE t.id = ? AND t.id = ut.task_id AND ut.user_id = ?
+        global $db;
+        $query = 'UPDATE ' . DB_TABLE_TASKS . 't,' . DB_TABLE_USERTASKS . 'ut' .
+                ' SET' .
+                ' t.' . DB_VAR_TASK . ' = :task,' .
+                ' t.' . DB_VAR_STATUS . ' = :status,' .
+                ' WHERE' .
+                ' t.' . DB_VAR_ID . ' = :id' . 
+                ' AND' . 
+                ' ut.' . DB_VAR_TASK_ID . ' = :task_id' .
+                ' AND' .
+                ' ut.' .DB_VAR_USER_ID . ' = :user_id';
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':task', $task);
+        $stmt->bindValue(':status', $status);
+        $stmt->bindValue(':task_id', $task_id);
+        $stmt->bindValue(':user_id', $user_id);
+        $stmt->execute();
+       $rows = $stmt->rowCount();
+       $stmt->closeCursor();
+       return $rows > 0;
+    }
     
+    /**
+     * Deletes a task from tasks table.  Task deleted corresponds to the 
+     * $task_id entered as an argument that is equal to the task_id on 
+     * user_tasks table with the $user_id input.  
+     * @global PDO $db
+     * @param type $user_id
+     * @param type $task_id
+     * @return boolean - success if rows affected > 0
+     */
+    public function deleteTask($user_id, $task_id) {
+//            "DELETE t FROM tasks t, user_tasks ut WHERE t.id = ?
+//             AND ut.task_id = t.id AND ut.user_id = ?"
+        
+        global $db;
+        $query = 'DELETE t FROM ' . DB_TABLE_TASKS . ' t,' . 
+                DB_TABLE_USERTASKS . ' ut' .
+                ' WHERE' .
+                ' t.' . DB_VAR_ID . ' = :task_id' . 
+                ' AND' .
+                ' ut.' . DB_VAR_TASK_ID . ' = t.' . DB_VAR_ID . 
+                ' AND' . 
+                ' ut.' . DB_VAR_USER_ID . ' = :user_id';
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':task_id', $task_id);
+        $stmt->bindValue(':user_id', $user_id);
+        $stmt->execute();
+        $deleted_rows = $stmt->rowCount();
+        $stmt->closeCursor();
+        return $deleted_rows > 0;
+        
+    }
     
     /* ------------- `user_tasks` table method ------------------ */
     /**

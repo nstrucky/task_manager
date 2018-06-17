@@ -9,7 +9,7 @@
   $app = new \Slim\Slim();
   
   //User id from db - Global Variable
-  $user_id = NULL;
+  $user_id_global = NULL;
   
   function verifyRequiredParams($required_fields) {
       
@@ -45,6 +45,63 @@
       }
   }
   
+  function validateEmail($email_address) {
+      $app = \Slim\Slim::getInstance();
+      if (!filter_var($email_address, FILTER_VALIDATE_EMAIL)) {
+          $response["error"] = TRUE;
+          $response["message"] = 'Email address is not valid';
+          echoResponse(400, $response);
+          $app->stop();
+                  
+      }
+  }
   
+  
+  function echoResponse($status_code, $response) {
+      $app = \Slim\Slim::getInstance();  
+      $app->status($status_code);
+      $app->contentType('application/json');
+      echo json_encode($response);
+  }
+  
+  /**
+ * User Registration
+ * url - /register
+ * method - POST
+ * params - name, email, password
+ */
+  $app->post('/register', function() use ($app) {
+            // check for required params
+            verifyRequiredParams(array('name', 'email', 'password'));
+ 
+            $response = array();
+ 
+            // reading post params
+            $name = $app->request->post('name');
+            $email = $app->request->post('email');
+            $password = $app->request->post('password');
+ 
+            // validating email address
+            validateEmail($email);
+ 
+            $db = new DbHandler();
+            $res = $db->createUser($name, $email, $password);
+ 
+            if ($res == USER_CREATED_SUCCESSFULLY) {
+                $response["error"] = false;
+                $response["message"] = "You are successfully registered";
+                echoRespnse(201, $response);
+            } else if ($res == USER_CREATE_FAILED) {
+                $response["error"] = true;
+                $response["message"] = "Oops! An error occurred while registereing";
+                echoRespnse(200, $response);
+            } else if ($res == USER_ALREADY_EXISTED) {
+                $response["error"] = true;
+                $response["message"] = "Sorry, this email already existed";
+                echoRespnse(200, $response);
+            }
+        });
+  
+  $app->run();
 
 ?>

@@ -3,7 +3,8 @@
  require_once '../include/DbHandler.php';
  require_once '../include/PassHash.php';
  require_once '.././libs/Slim/Slim.php';
-
+ require_once '../include/string_vars.php';
+ 
   \Slim\Slim::registerAutoLoader();
   
   $app = new \Slim\Slim();
@@ -85,13 +86,13 @@
             // validating email address
             validateEmail($email);
  
-            $db = new DbHandler();
-            $res = $db->createUser($name, $email, $password);
+            $db_handler = new DbHandler();
+            $res = $db_handler->createUser($name, $email, $password);
  
             if ($res == USER_CREATED_SUCCESSFULLY) {
                 $response["error"] = false;
                 $response["message"] = "You are successfully registered";
-                echoRespnse(201, $response);
+                echoResponse(201, $response);
             } else if ($res == USER_CREATE_FAILED) {
                 $response["error"] = true;
                 $response["message"] = "Oops! An error occurred while registereing";
@@ -99,7 +100,7 @@
             } else if ($res == USER_ALREADY_EXISTED) {
                 $response["error"] = true;
                 $response["message"] = "Sorry, this email already existed";
-                echoRespnse(200, $response);
+                echoResponse(200, $response);
             }
         });
         
@@ -137,6 +138,37 @@
      
  });
   
+ 
+ function authenticate(\Slim\Route $route) {
+     $headers = apache_request_headers();//array
+     $response = array();
+     $app = \Slim\Slim::getInstance();
+     
+     if (isset($headers['Authorization'])) {
+         $db_handler = new DbHandler();
+         $api_key = $headers['Authorization'];
+
+         if ($db_handler->isValidApiKey($api_key)) {
+             global $user_id_global;
+             $user = $db_handler->getUserId($api_key);
+             if ($user != NULL) {
+                 $user_id_global = $user[DB_VAR_ID];
+             }
+         } else {
+             $response['error'] = TRUE;
+             $response['message'] = 'Invalid API Key';
+             echoResponse(401, $response);
+             $app->stop();
+         }
+     } else {
+         $response['error'] = TRUE;
+         $response['message'] = 'Api Key not provided in header.';
+         echoResponse(400, $response);  
+         $app->stop();
+     }      
+     
+ }
+ 
   $app->run();
 
 ?>

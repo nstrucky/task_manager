@@ -1,7 +1,9 @@
 <?php
 
+require_once '../include/db_connect.php';
+
 class DbHandler {
-       
+         
     /* ------------- `users` table method ------------------ */
     
     /**
@@ -195,9 +197,9 @@ class DbHandler {
                 ' WHERE ' . DB_VAR_EMAIL .
                 ' = :userEmail';
         $statement = $db->prepare($query);
-        $statement->bind(':userEmail', $email);
+        $statement->bindValue(':userEmail', $email);
         $statement->execute();
-        $thisArray = $statement->fetch_all();
+        $thisArray = $statement->fetchAll();
         $num_rows = count($thisArray);
         $statement->closeCursor();
         return $num_rows > 0;

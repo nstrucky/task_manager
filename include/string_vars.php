@@ -50,4 +50,16 @@ define('DB_VAR_TASK', 'task');
 define('DB_VAR_USER_ID', 'user_id');
 define('DB_VAR_TASK_ID', 'task_id');
 
+
+/**
+ * HTTP paths and parameters
+ */
+define('HTTP_PATH_REGISTER', 'register');
+define('HTTP_PATH_LOGIN', 'login');
+define('HTTP_PARAM_NAME', 'name');
+define('HTTP_PARAM_EMAIL', 'email');
+define('HTTP_PARAM_PASSWORD', 'password');
+
+
+
 ?>

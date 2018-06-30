@@ -70,9 +70,10 @@
  * method - POST
  * params - name, email, password
  */
-  $app->post('/register', function() use ($app) {
+  $app->post('/'.HTTP_PATH_REGISTER, function() use ($app) {
             // check for required params
-            verifyRequiredParams(array('name', 'email', 'password'));
+            verifyRequiredParams(array(HTTP_PARAM_NAME, HTTP_PARAM_EMAIL,
+               HTTP_PARAM_PASSWORD));
  
             $response = array();
  
@@ -101,6 +102,40 @@
                 echoRespnse(200, $response);
             }
         });
+        
+        
+        
+ $app->post('/'.HTTP_PATH_LOGIN, function() use ($app) {
+    
+     verifyRequiredParams(array(HTTP_PARAM_EMAIL, HTTP_PARAM_PASSWORD));
+     
+     $name = $app->post(HTTP_PARAM_NAME);
+     $email = $app->post(HTTP_PARAM_EMAIL);
+     $response = array();
+     
+     $db_handler = new DbHandler();
+     
+     if ($db_handler->checkLogin($email, $password)) {
+         $user = $db_handler->getUserByEmail($email);
+                 
+         if ($user != NULL) {
+             $response['error'] = FALSE;
+             $resposne[DB_VAR_NAME] = $user[DB_VAR_NAME];
+             $resposne[DB_VAR_EMAIL] = $user[DB_VAR_EMAIL];
+             $resposne[DB_VAR_API_KEY] = $user[DB_VAR_API_KEY];
+             $resposne[DB_VAR_CREATED_AT] = $user[DB_VAR_CREATED_AT];
+         } else {
+             $response['error'] = TRUE;
+             $repsonse['message'] = 'An error occured. Could not retrieve'
+                     . 'user from database.';
+         }         
+     } else {
+         $response['error'] = TRUE;
+         $response['message'] = 'Login failed. Credentials incorrect.';
+     }  
+     echoResponse(200, $response);
+     
+ });
   
   $app->run();
 

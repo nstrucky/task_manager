@@ -71,7 +71,7 @@ class DbHandler {
         $userResult = $stmt->fetch(PDO::FETCH_ASSOC);
         $stmt->closeCursor();
         
-        if (count($userResult) > 0) {
+        if ($userResult != NULL && count($userResult) > 0) {
             $pass_hash = $userResult[DB_VAR_PASSWORD_HASH];
              
             if (PassHash::check_password($pass_hash, $password)) {
@@ -92,6 +92,7 @@ class DbHandler {
      * data
      */
     public function getUserByEmail($email) {
+        global $db;
         $query = 'SELECT ' . DB_VAR_PASSWORD_HASH . 
                 ', ' . DB_VAR_NAME .
                 ', ' . DB_VAR_EMAIL .

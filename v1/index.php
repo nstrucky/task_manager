@@ -110,8 +110,8 @@
     
      verifyRequiredParams(array(HTTP_PARAM_EMAIL, HTTP_PARAM_PASSWORD));
      
-     $name = $app->post(HTTP_PARAM_NAME);
-     $email = $app->post(HTTP_PARAM_EMAIL);
+     $password = $app->request->post(HTTP_PARAM_PASSWORD);
+     $email = $app->request->post(HTTP_PARAM_EMAIL);
      $response = array();
      
      $db_handler = new DbHandler();
@@ -121,13 +121,13 @@
                  
          if ($user != NULL) {
              $response['error'] = FALSE;
-             $resposne[DB_VAR_NAME] = $user[DB_VAR_NAME];
-             $resposne[DB_VAR_EMAIL] = $user[DB_VAR_EMAIL];
-             $resposne[DB_VAR_API_KEY] = $user[DB_VAR_API_KEY];
-             $resposne[DB_VAR_CREATED_AT] = $user[DB_VAR_CREATED_AT];
+             $response[DB_VAR_NAME] = $user[DB_VAR_NAME];
+             $response[DB_VAR_EMAIL] = $user[DB_VAR_EMAIL];
+             $response[DB_VAR_API_KEY] = $user[DB_VAR_API_KEY];
+             $response[DB_VAR_CREATED_AT] = $user[DB_VAR_CREATED_AT];
          } else {
              $response['error'] = TRUE;
-             $repsonse['message'] = 'An error occured. Could not retrieve'
+             $response['message'] = 'An error occured. Could not retrieve'
                      . 'user from database.';
          }         
      } else {

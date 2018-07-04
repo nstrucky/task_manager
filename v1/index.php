@@ -139,20 +139,51 @@
  });
   
  
+ /**
+ * Creates a new task in db
+ * method POST
+ * params - name
+ * url - /tasks/
+ */
+ $app->post('/'.HTTP_PATH_TASKS, 'authenticate', function() use ($app) {
+     verifyRequiredParams(array(HTTP_PARAM_TASK));
+     
+     $response = array();
+     
+     $task = $app->request->post(HTTP_PARAM_TASK);
+     
+     global $user_id_global;
+     $db_handler = new DbHandler();
+     
+     $task_id = $db_handler->createTask($user_id_global, $task);
+     
+     if ($task_id != NULL) {
+         $response['error'] = FALSE;
+         $response['message'] = 'Task created successfully';
+         $response['task_id'] = $task_id;
+     } else {
+         $response['error'] = TRUE;
+         $response['message'] = 'Failed to create task.';
+     }
+     echoResponse(201, $response);
+ });
+ 
+ 
+ 
  function authenticate(\Slim\Route $route) {
      $headers = apache_request_headers();//array
      $response = array();
      $app = \Slim\Slim::getInstance();
      
-     if (isset($headers['Authorization'])) {
+     if (isset($headers['authorization'])) {
          $db_handler = new DbHandler();
-         $api_key = $headers['Authorization'];
+         $api_key = $headers['authorization'];
 
          if ($db_handler->isValidApiKey($api_key)) {
              global $user_id_global;
-             $user = $db_handler->getUserId($api_key);
-             if ($user != NULL) {
-                 $user_id_global = $user[DB_VAR_ID];
+             $this_user_id = $db_handler->getUserId($api_key);
+             if ($this_user_id != NULL) {
+                 $user_id_global = $this_user_id;
              }
          } else {
              $response['error'] = TRUE;
@@ -168,6 +199,13 @@
      }      
      
  }
+ 
+ 
+ 
+ 
+ 
+ 
+ 
  
   $app->run();
 

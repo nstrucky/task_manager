@@ -28,7 +28,7 @@ define('DB_TABLE_USERTASKS', 'user_tasks');
 /**
  * Shared variables
  */
-define('DB_VAR_ID', 'id');
+define('DB_VAR_ID', 'unique_id');
 define('DB_VAR_STATUS', 'status');
 define('DB_VAR_CREATED_AT', 'created_at');
 /**
@@ -56,9 +56,11 @@ define('DB_VAR_TASK_ID', 'task_id');
  */
 define('HTTP_PATH_REGISTER', 'register');
 define('HTTP_PATH_LOGIN', 'login');
+define('HTTP_PATH_TASKS', 'tasks');
 define('HTTP_PARAM_NAME', 'name');
 define('HTTP_PARAM_EMAIL', 'email');
 define('HTTP_PARAM_PASSWORD', 'password');
+define('HTTP_PARAM_TASK', 'task')
 
 
 

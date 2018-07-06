@@ -71,7 +71,7 @@
  * method - POST
  * params - name, email, password
  */
-  $app->post('/'.HTTP_PATH_REGISTER, function() use ($app) {
+  $app->post(HTTP_PATH_REGISTER, function() use ($app) {
             // check for required params
             verifyRequiredParams(array(HTTP_PARAM_NAME, HTTP_PARAM_EMAIL,
                HTTP_PARAM_PASSWORD));
@@ -106,7 +106,7 @@
         
         
         
- $app->post('/'.HTTP_PATH_LOGIN, function() use ($app) {
+ $app->post(HTTP_PATH_LOGIN, function() use ($app) {
     
      verifyRequiredParams(array(HTTP_PARAM_EMAIL, HTTP_PARAM_PASSWORD));
      
@@ -145,7 +145,7 @@
  * params - name
  * url - /tasks/
  */
- $app->post('/'.HTTP_PATH_TASKS, 'authenticate', function() use ($app) {
+ $app->post(HTTP_PATH_TASKS, 'authenticate', function() use ($app) {
      verifyRequiredParams(array(HTTP_PARAM_TASK));
      
      $response = array();
@@ -168,8 +168,12 @@
      echoResponse(201, $response);
  });
  
- 
- $app->get('/'.HTTP_PATH_TASKS, 'authenticate', function() {
+ /**
+ * Listing all tasks of particual user
+ * method GET
+ * url /tasks          
+ */
+ $app->get(HTTP_PATH_TASKS, 'authenticate', function() {
  
      global $user_id_global;
      $response = array();
@@ -183,10 +187,39 @@
           
      foreach ($result as $row) {
          array_push($response['tasks'], $row);
-         
      }
      echoResponse(200, $response);
  });
+ 
+ /**
+ * Listing single task of particual user
+ * method GET
+ * url /tasks/:id
+ * Will return 404 if the task doesn't belongs to user
+ */
+ $app->get(HTTP_PATH_SINGLE_TASK, 'authenticate', function($task_id) {
+ 
+     global $user_id_global;
+     
+     $response = array();
+     $db_handler = new DbHandler();
+     
+     $response['task'] = array();
+     
+     $task_array = $db_handler->getTask($task_id, $user_id_global);
+     
+     if ($task_array != NULL) {
+         $response['error'] = FALSE;
+         $response['message'] = 'Task successfully retrieved';
+         $response['task'] = $task_array;
+     } else {
+         $response['error'] = TRUE;
+         $response['message'] = 'Requested task does not exist';
+     }
+     
+     echoResponse(200, $response);
+ });
+ 
  
  
  function authenticate(\Slim\Route $route) {
@@ -218,13 +251,6 @@
      }      
      
  }
- 
- 
- 
- 
- 
- 
- 
  
   $app->run();
 

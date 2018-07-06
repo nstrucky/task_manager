@@ -169,6 +169,25 @@
  });
  
  
+ $app->get('/'.HTTP_PATH_TASKS, 'authenticate', function() {
+ 
+     global $user_id_global;
+     $response = array();
+
+     $db_handler = new DbHandler();
+     
+     $result = $db_handler->getAllUserTasks($user_id_global);
+     
+     $response['error'] = FALSE;
+     $response['tasks'] = array();
+          
+     foreach ($result as $row) {
+         array_push($response['tasks'], $row);
+         
+     }
+     echoResponse(200, $response);
+ });
+ 
  
  function authenticate(\Slim\Route $route) {
      $headers = apache_request_headers();//array

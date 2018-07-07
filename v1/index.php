@@ -23,13 +23,14 @@
       
       if ($_SERVER['REQUEST_METHOD'] == 'PUT') { // really shouldn't do it this way
           $app = \Slim\Slim::getInstance(); //why getInstance here when it's already instantiated above?
-          parse_str($app->request()->getBody(), $request_params);
+          $request_body = $app->request()->getBody();
+          parse_str($request_body, $request_params);//this only seems to work for url encoded requests from client
           
       }
       
       foreach($required_fields as $field) {
           if (!isset($request_params[$field]) || 
-                  strlen($request_params[$field]) <= 0) {
+                  strlen(trim($request_params[$field])) <= 0) {
               $error = TRUE;
               $error_fields .= $field . ', ';
           }
@@ -38,7 +39,7 @@
       if ($error) {
           $response = array();
           $app = \Slim\Slim::getInstance();
-          $response["error"] = true;
+          $response["error"] = true; 
           $response["message"] = 'Required field(s) ' . 
                   substr($error_fields,0, -2) . ' is missing or empty.';
           echoResponse(400, $response);
@@ -169,7 +170,7 @@
  });
  
  /**
- * Listing all tasks of particual user
+ * Listing all tasks of particular user
  * method GET
  * url /tasks          
  */
@@ -212,14 +213,51 @@
          $response['error'] = FALSE;
          $response['message'] = 'Task successfully retrieved';
          $response['task'] = $task_array;
+         echoResponse(200, $response);
      } else {
          $response['error'] = TRUE;
          $response['message'] = 'Requested task does not exist';
+         echoResponse(404, $response);
+     }
+     
+
+ });
+ 
+ 
+ /**
+ * Updating existing task
+ * method PUT
+ * params task, status
+ * url - /tasks/:id
+ */
+ $app->put(HTTP_PATH_SINGLE_TASK, 'authenticate', function($task_id) use($app) {
+     verifyRequiredParams(array('task','status'));
+     
+     global $user_id_global;
+     $task = $app->request->put('task');
+     $status = $app->request->put('status');
+     $db_handler = new DbHandler();
+     $response = array();
+     
+     $success = 
+             $db_handler->updateTask($user_id_global, $task_id, $task, $status);
+     if ($success) {
+         $response['error'] = FALSE;
+         $response['message'] = 'Task updated successfully';
+     } else {
+         $response['error'] = TRUE;
+         $response['message'] = 'Error: could not update specified task';
+         $message = 'There was and error Task = ' . $task . 
+                 ' Status = ' . $status .
+                 ' User ID = ' . $user_id_global .
+                 ' Task ID = ' . $task_id;
+         
+         $response['details'] = $message;
      }
      
      echoResponse(200, $response);
+     
  });
- 
  
  
  function authenticate(\Slim\Route $route) {

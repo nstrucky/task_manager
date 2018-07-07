@@ -325,14 +325,14 @@ class DbHandler {
 //        UPDATE tasks t, user_tasks ut set t.task = ?, t.status = ? 
 //        WHERE t.id = ? AND t.id = ut.task_id AND ut.user_id = ?
         global $db;
-        $query = 'UPDATE ' . DB_TABLE_TASKS . 't,' . DB_TABLE_USERTASKS . 'ut' .
+        $query = 'UPDATE ' . DB_TABLE_TASKS . ' t, ' . DB_TABLE_USERTASKS . ' ut' .
                 ' SET' .
                 ' t.' . DB_VAR_TASK . ' = :task,' .
-                ' t.' . DB_VAR_STATUS . ' = :status,' .
+                ' t.' . DB_VAR_STATUS . ' = :status' .
                 ' WHERE' .
-                ' t.' . DB_VAR_ID . ' = :id' . 
+                ' t.' . DB_VAR_ID . ' = :task_id' . 
                 ' AND' . 
-                ' ut.' . DB_VAR_TASK_ID . ' = :task_id' .
+                ' t.' . DB_VAR_ID . ' = ut.' . DB_VAR_TASK_ID .
                 ' AND' .
                 ' ut.' .DB_VAR_USER_ID . ' = :user_id';
         $stmt = $db->prepare($query);

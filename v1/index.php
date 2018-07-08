@@ -290,6 +290,26 @@
      
  }
  
+ $app->delete(HTTP_PATH_SINGLE_TASK, 'authenticate', function($task_id) use($app) {
+    global $user_id_global;
+    $response = array();
+    $db_handler = new DbHandler();
+    
+    $success = $db_handler->deleteTask($user_id_global, $task_id);
+    
+    if ($success) {
+        $response['error'] = FALSE;
+        $response['message'] = 'Task ' . $task_id . ' successfully deleted';
+    } else {
+        $response['error'] = TRUE;
+        $response['message'] = 'Could not delete task ' . $task_id;
+    }
+    echoResponse(200, $response);
+     
+ });
+ 
+ 
+ 
   $app->run();
 
 ?>
